@@ -13,6 +13,7 @@
   let wordsEl: HTMLDivElement;
   let letterEl: HTMLSpanElement;
   let inputEl: HTMLInputElement;
+  let caretEl: HTMLDivElement;
 
   const updateGameState = () => {
     setLetter();
@@ -20,6 +21,7 @@
     nextLetter();
     resetLetter();
     updateLine();
+    moveCaret();
   };
 
   const setLetter = () => {
@@ -65,6 +67,7 @@
       wordIndex += 1;
       letterIndex = 0;
       increaseScore();
+      moveCaret();
     }
   };
 
@@ -76,6 +79,12 @@
     if (wordY > wordsY) {
       wordEl.scrollIntoView({ block: "center" });
     }
+  };
+
+  const moveCaret = () => {
+    const offset = 4;
+    caretEl.style.top = `${letterEl.offsetTop + offset}px`;
+    caretEl.style.left = `${letterEl.offsetLeft + letterEl.offsetWidth}px`;
   };
 
   const handleKeydown = (event: KeyboardEvent) => {
@@ -119,6 +128,8 @@
         {/each}
       </span>
     {/each}
+
+    <div bind:this={caretEl} class="caret" />
   </div>
 </div>
 
@@ -149,6 +160,31 @@
       &:global([data-letter="incorrect"]) {
         color: var(--primary);
         opacity: 1;
+      }
+    }
+
+    .game {
+      &[data-game="in progress"] .caret {
+        animation: none;
+      }
+    }
+
+    .caret {
+      position: absolute;
+      height: 1.8rem;
+      top: 0;
+      border-right: 1px solid var(--primary);
+      animation: caret 1s infinite;
+      transition: all 0.2s ease;
+
+      @keyframes caret {
+        0%,
+        to {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
       }
     }
   }
