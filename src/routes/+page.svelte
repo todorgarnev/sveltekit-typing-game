@@ -19,6 +19,7 @@
     checkLetter();
     nextLetter();
     resetLetter();
+    updateLine()
   };
 
   const setLetter = () => {
