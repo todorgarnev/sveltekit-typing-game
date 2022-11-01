@@ -19,7 +19,7 @@
     checkLetter();
     nextLetter();
     resetLetter();
-    updateLine()
+    updateLine();
   };
 
   const setLetter = () => {
@@ -65,6 +65,16 @@
       wordIndex += 1;
       letterIndex = 0;
       increaseScore();
+    }
+  };
+
+  const updateLine = () => {
+    const wordEl = wordsEl.children[wordIndex];
+    const wordsY = wordsEl.getBoundingClientRect().y;
+    const wordY = wordEl.getBoundingClientRect().y;
+
+    if (wordY > wordsY) {
+      wordEl.scrollIntoView({ block: "center" });
     }
   };
 
