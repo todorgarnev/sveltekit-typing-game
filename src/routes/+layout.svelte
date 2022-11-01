@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "../styles/app.scss";
+  import "../styles/app.scss"
 </script>
 
 <svelte:head>
@@ -25,10 +25,10 @@
   }
 
   .layout {
-    height: 100%;
+    padding: 2rem;
     display: grid;
     grid-template-rows: auto 1fr;
     align-items: center;
-    padding: 2rem;
+    height: 100%;
   }
 </style>
