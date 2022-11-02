@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { tweened } from "svelte/motion";
+
   type Game = "waiting for input" | "in progress" | "game over";
   type Word = string;
 
@@ -10,6 +12,9 @@
   let wordIndex: number = 0;
   let letterIndex: number = 0;
   let correctLetters: number = 0;
+
+  let wordsPerMinute = tweened(0, { delay: 300, duration: 1000 });
+  let accuracy = tweened(0, { delay: 1300, duration: 1000 });
 
   let wordsEl: HTMLDivElement;
   let letterEl: HTMLSpanElement;
@@ -88,6 +93,26 @@
     caretEl.style.left = `${letterEl.offsetLeft + letterEl.offsetWidth}px`;
   };
 
+  const getResults = () => {
+    $wordsPerMinute = getWordsPerMinute();
+    $accuracy = getAccuracy();
+  };
+
+  const getWordsPerMinute = () => {
+    const word = 5;
+    const minutes = 0.5;
+    return Math.floor(correctLetters / word / minutes);
+  };
+
+  const getAccuracy = () => {
+    const totalLetters = getTotalLetters(words);
+    return Math.floor((correctLetters / totalLetters) * 100);
+  };
+
+  const getTotalLetters = (words: Word[]) => {
+    return words.reduce((count, word) => count + word.length, 0);
+  };
+
   const handleKeydown = (event: KeyboardEvent) => {
     if (event.code === "Space") {
       event.preventDefault();
@@ -131,30 +156,46 @@
   };
 </script>
 
-<div class="game" data-game={game}>
-  <input
-    bind:this={inputEl}
-    bind:value={typedLetter}
-    on:input={updateGameState}
-    on:keydown={handleKeydown}
-    class="input"
-    type="text"
-  />
+{#if game !== "game over"}
+  <div class="game" data-game={game}>
+    <input
+      bind:this={inputEl}
+      bind:value={typedLetter}
+      on:input={updateGameState}
+      on:keydown={handleKeydown}
+      class="input"
+      type="text"
+    />
 
-  <div class="time">{seconds}</div>
+    <div class="time">{seconds}</div>
 
-  <div bind:this={wordsEl} class="words">
-    {#each words as word}
-      <span class="word">
-        {#each word as letter}
-          <span class="letter">{letter}</span>
-        {/each}
-      </span>
-    {/each}
+    <div bind:this={wordsEl} class="words">
+      {#each words as word}
+        <span class="word">
+          {#each word as letter}
+            <span class="letter">{letter}</span>
+          {/each}
+        </span>
+      {/each}
 
-    <div bind:this={caretEl} class="caret" />
+      <div bind:this={caretEl} class="caret" />
+    </div>
   </div>
-</div>
+{/if}
+
+{#if game === "game over"}
+  <div class="results">
+    <div>
+      <p class="title">wpm</p>
+      <p class="score">{Math.trunc($wordsPerMinute)}</p>
+    </div>
+
+    <div>
+      <p class="title">accuracy</p>
+      <p class="score">{Math.trunc($accuracy)}%</p>
+    </div>
+  </div>
+{/if}
 
 <style lang="scss">
   .words {
@@ -224,6 +265,22 @@
           opacity: 1;
         }
       }
+    }
+  }
+
+  .results {
+    .title {
+      font-size: 2rem;
+      color: var(--fg-200);
+    }
+
+    .score {
+      font-size: 4rem;
+      color: var(--primary);
+    }
+
+    .play {
+      margin-top: 1rem;
     }
   }
 </style>
