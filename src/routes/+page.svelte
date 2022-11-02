@@ -3,12 +3,13 @@
   type Word = string;
 
   let game: Game = "waiting for input";
-  let typedLetter = "";
+  let seconds: number = 30;
+  let typedLetter: string = "";
 
   let words: Word[] = "The quick brown fox jumps over the lazy dog".split(" ");
-  let wordIndex = 0;
-  let letterIndex = 0;
-  let correctLetters = 0;
+  let wordIndex: number = 0;
+  let letterIndex: number = 0;
+  let correctLetters: number = 0;
 
   let wordsEl: HTMLDivElement;
   let letterEl: HTMLSpanElement;
@@ -103,6 +104,26 @@
 
   const startGame = () => {
     setGameState("in progress");
+    setGameTimer();
+  };
+
+  const setGameTimer = () => {
+    const gameTimer = () => {
+      if (seconds > 0) {
+        seconds -= 1;
+      }
+
+      if (game === "waiting for input" || seconds === 0) {
+        clearInterval(interval);
+      }
+
+      if (seconds === 0) {
+        setGameState("game over");
+        getResults();
+      }
+    };
+
+    const interval = setInterval(gameTimer, 1000);
   };
 
   const setGameState = (state: Game) => {
@@ -119,6 +140,8 @@
     class="input"
     type="text"
   />
+
+  <div class="time">{seconds}</div>
 
   <div bind:this={wordsEl} class="words">
     {#each words as word}
@@ -164,6 +187,21 @@
     }
 
     .game {
+      position: relative;
+
+      .time {
+        position: absolute;
+        top: -48px;
+        font-size: 1.5rem;
+        color: var(--primary);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      &[data-game="in progress"] .time {
+        opacity: 1;
+      }
+
       &[data-game="in progress"] .caret {
         animation: none;
       }
