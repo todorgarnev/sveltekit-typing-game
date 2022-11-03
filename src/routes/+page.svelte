@@ -254,6 +254,39 @@
 {/if}
 
 <style lang="scss">
+  .game {
+    position: relative;
+
+    .input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .time {
+      position: absolute;
+      top: -48px;
+      color: var(--primary);
+      font-size: 1.5rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    &[data-game="in progress"] .time {
+      opacity: 1;
+    }
+
+    &[data-game="in progress"] .caret {
+      animation: none;
+    }
+
+    .reset {
+      margin-top: 2rem;
+      display: grid;
+      justify-content: center;
+      width: 100%;
+    }
+  }
+
   .words {
     --line-height: 1em;
     --lines: 3;
@@ -264,9 +297,9 @@
     gap: 0.6em;
     width: 100%;
     max-height: calc(var(--line-height) * var(--lines) * 1.42);
+    overflow: hidden;
     font-size: 1.5rem;
     line-height: var(--line-height);
-    overflow: hidden;
     user-select: none;
 
     .letter {
@@ -283,43 +316,10 @@
       }
     }
 
-    .game {
-      position: relative;
-
-      .input {
-        position: absolute;
-        opacity: 0;
-      }
-
-      .time {
-        position: absolute;
-        top: -48px;
-        font-size: 1.5rem;
-        color: var(--primary);
-        opacity: 0;
-        transition: all 0.3s ease;
-      }
-
-      &[data-game="in progress"] .time {
-        opacity: 1;
-      }
-
-      &[data-game="in progress"] .caret {
-        animation: none;
-      }
-
-      .reset {
-        margin-top: 2rem;
-        display: grid;
-        justify-content: center;
-        width: 100%;
-      }
-    }
-
     .caret {
       position: absolute;
-      height: 1.8rem;
       top: 0;
+      height: 1.8rem;
       border-right: 1px solid var(--primary);
       animation: caret 1s infinite;
       transition: all 0.2s ease;
@@ -338,13 +338,13 @@
 
   .results {
     .title {
-      font-size: 2rem;
       color: var(--fg-200);
+      font-size: 2rem;
     }
 
     .score {
-      font-size: 4rem;
       color: var(--primary);
+      font-size: 4rem;
     }
 
     .play {
