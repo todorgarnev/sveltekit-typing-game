@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { tweened } from "svelte/motion";
+  import { blur } from "svelte/transition";
 
   type Game = "waiting for input" | "in progress" | "game over";
   type Word = string;
@@ -7,8 +9,9 @@
   let game: Game = "waiting for input";
   let seconds: number = 30;
   let typedLetter: string = "";
+  let toggleReset: boolean = false;
 
-  let words: Word[] = "The quick brown fox jumps over the lazy dog".split(" ");
+  let words: Word[] = [];
   let wordIndex: number = 0;
   let letterIndex: number = 0;
   let correctLetters: number = 0;
@@ -154,6 +157,36 @@
   const setGameState = (state: Game) => {
     game = state;
   };
+
+  const resetGame = () => {
+    toggleReset = !toggleReset;
+
+    setGameState("waiting for input");
+    getWords(100);
+
+    seconds = 30;
+    typedLetter = "";
+    wordIndex = 0;
+    letterIndex = 0;
+    correctLetters = 0;
+
+    $wordsPerMinute = 0;
+    $accuracy = 0;
+  };
+
+  const getWords = async (limit: number) => {
+    const response = await fetch(`/api/words?limit=${limit}`);
+    words = await response.json();
+  };
+
+  const focusInput = () => {
+    inputEl.focus();
+  };
+
+  onMount(() => {
+    getWords(100);
+    focusInput();
+  });
 </script>
 
 {#if game !== "game over"}
@@ -169,22 +202,43 @@
 
     <div class="time">{seconds}</div>
 
-    <div bind:this={wordsEl} class="words">
-      {#each words as word}
-        <span class="word">
-          {#each word as letter}
-            <span class="letter">{letter}</span>
-          {/each}
-        </span>
-      {/each}
+    {#key toggleReset}
+      <div in:blur|local bind:this={wordsEl} class="words">
+        {#each words as word}
+          <span class="word">
+            {#each word as letter}
+              <span class="letter">{letter}</span>
+            {/each}
+          </span>
+        {/each}
 
-      <div bind:this={caretEl} class="caret" />
+        <div bind:this={caretEl} class="caret" />
+      </div>
+    {/key}
+
+    <div class="reset">
+      <button on:click={resetGame} aria-label="reset">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          fill="none"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3"
+          />
+        </svg>
+      </button>
     </div>
   </div>
 {/if}
 
 {#if game === "game over"}
-  <div class="results">
+  <div in:blur class="results">
     <div>
       <p class="title">wpm</p>
       <p class="score">{Math.trunc($wordsPerMinute)}</p>
@@ -194,6 +248,8 @@
       <p class="title">accuracy</p>
       <p class="score">{Math.trunc($accuracy)}%</p>
     </div>
+
+    <button on:click={resetGame} class="play">play again</button>
   </div>
 {/if}
 
@@ -230,6 +286,11 @@
     .game {
       position: relative;
 
+      .input {
+        position: absolute;
+        opacity: 0;
+      }
+
       .time {
         position: absolute;
         top: -48px;
@@ -245,6 +306,13 @@
 
       &[data-game="in progress"] .caret {
         animation: none;
+      }
+
+      .reset {
+        margin-top: 2rem;
+        display: grid;
+        justify-content: center;
+        width: 100%;
       }
     }
 
