@@ -266,7 +266,7 @@
       position: absolute;
       top: -48px;
       color: var(--primary);
-      font-size: 1.5rem;
+      font-size: 2.4rem;
       opacity: 0;
       transition: all 0.3s ease;
     }
@@ -280,7 +280,7 @@
     }
 
     .reset {
-      margin-top: 2rem;
+      margin-top: 3.2rem;
       display: grid;
       justify-content: center;
       width: 100%;
@@ -298,7 +298,7 @@
     width: 100%;
     max-height: calc(var(--line-height) * var(--lines) * 1.42);
     overflow: hidden;
-    font-size: 1.5rem;
+    font-size: 2.4rem;
     line-height: var(--line-height);
     user-select: none;
 
@@ -319,7 +319,7 @@
     .caret {
       position: absolute;
       top: 0;
-      height: 1.8rem;
+      height: 2.88rem;
       border-right: 1px solid var(--primary);
       animation: caret 1s infinite;
       transition: all 0.2s ease;
@@ -339,16 +339,16 @@
   .results {
     .title {
       color: var(--fg-200);
-      font-size: 2rem;
+      font-size: 3.2rem;
     }
 
     .score {
       color: var(--primary);
-      font-size: 4rem;
+      font-size: 6.4rem;
     }
 
     .play {
-      margin-top: 1rem;
+      margin-top: 1.6rem;
     }
   }
 </style>

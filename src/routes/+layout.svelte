@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "../styles/app.scss"
+  import "../styles/app.scss";
 </script>
 
 <svelte:head>
@@ -7,9 +7,7 @@
 </svelte:head>
 
 <div class="layout">
-  <nav>
-    <h1>🔥 sveltype</h1>
-  </nav>
+  <h1>✏️ sveltype ⌛</h1>
 
   <main>
     <slot />
@@ -17,15 +15,19 @@
 </div>
 
 <style lang="scss">
+  :root {
+    font-size: 10px;
+  }
+
   h1 {
     font-family: "Lexend Deca", sans-serif;
-    font-size: 1.8rem;
+    font-size: 2.8rem;
     color: var(--fg-200);
     letter-spacing: 2px;
   }
 
   .layout {
-    padding: 2rem;
+    padding: 3.2rem;
     display: grid;
     grid-template-rows: auto 1fr;
     align-items: center;
