@@ -15,10 +15,6 @@
 </div>
 
 <style lang="scss">
-  :root {
-    font-size: 10px;
-  }
-
   h1 {
     font-family: "Lexend Deca", sans-serif;
     font-size: 2.8rem;

@@ -1,28 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { tweened } from "svelte/motion";
+
   import { blur } from "svelte/transition";
-
-  type Game = "waiting for input" | "in progress" | "game over";
-  type Word = string;
-
-  let game: Game = "waiting for input";
-  let seconds: number = 30;
-  let typedLetter: string = "";
-  let toggleReset: boolean = false;
-
-  let words: Word[] = [];
-  let wordIndex: number = 0;
-  let letterIndex: number = 0;
-  let correctLetters: number = 0;
-
-  let wordsPerMinute = tweened(0, { delay: 300, duration: 1000 });
-  let accuracy = tweened(0, { delay: 1300, duration: 1000 });
-
-  let wordsEl: HTMLDivElement;
-  let letterEl: HTMLSpanElement;
-  let inputEl: HTMLInputElement;
-  let caretEl: HTMLDivElement;
+  import type { Game, Word } from "$lib/types/types";
+  import {
+    timer,
+    game,
+    words,
+    wordIndex,
+    letterIndex,
+    correctLetters,
+    typedLetter,
+    toggleReset,
+    wordsEl,
+    letterEl,
+    inputEl,
+    caretEl,
+    wordsPerMinute,
+    accuracy
+  } from "$lib/stores";
 
   const updateGameState = () => {
     setLetter();
@@ -34,55 +30,56 @@
   };
 
   const setLetter = () => {
-    const isWordCompleted: boolean = letterIndex > words[wordIndex].length - 1;
+    const isWordCompleted: boolean =
+      $letterIndex > $words[$wordIndex].length - 1;
 
     if (!isWordCompleted) {
-      letterEl = wordsEl.children[wordIndex].children[
-        letterIndex
+      $letterEl = $wordsEl.children[$wordIndex].children[
+        $letterIndex
       ] as HTMLSpanElement;
     }
   };
 
   const checkLetter = () => {
-    const currentLetter: string = words[wordIndex][letterIndex];
+    const currentLetter: string = $words[$wordIndex][$letterIndex];
 
-    if (typedLetter === currentLetter) {
-      letterEl.dataset.letter = "correct";
+    if ($typedLetter === currentLetter) {
+      $letterEl.dataset.letter = "correct";
       increaseScore();
     }
 
-    if (typedLetter !== currentLetter) {
-      letterEl.dataset.letter = "incorrect";
+    if ($typedLetter !== currentLetter) {
+      $letterEl.dataset.letter = "incorrect";
     }
   };
 
   const increaseScore = () => {
-    correctLetters += 1;
+    $correctLetters += 1;
   };
 
   const nextLetter = () => {
-    letterIndex += 1;
+    $letterIndex += 1;
   };
 
   const resetLetter = () => {
-    typedLetter = "";
+    $typedLetter = "";
   };
 
   const nextWord = () => {
-    const isNotFirstLetter: boolean = letterIndex !== 0;
-    const isOneLetterWord: boolean = words[wordIndex].length === 1;
+    const isNotFirstLetter: boolean = $letterIndex !== 0;
+    const isOneLetterWord: boolean = $words[$wordIndex].length === 1;
 
     if (isNotFirstLetter || isOneLetterWord) {
-      wordIndex += 1;
-      letterIndex = 0;
+      $wordIndex += 1;
+      $letterIndex = 0;
       increaseScore();
       moveCaret();
     }
   };
 
   const updateLine = () => {
-    const wordEl = wordsEl.children[wordIndex];
-    const wordsY = wordsEl.getBoundingClientRect().y;
+    const wordEl = $wordsEl.children[$wordIndex];
+    const wordsY = $wordsEl.getBoundingClientRect().y;
     const wordY = wordEl.getBoundingClientRect().y;
 
     if (wordY > wordsY) {
@@ -92,8 +89,8 @@
 
   const moveCaret = () => {
     const offset = 4;
-    caretEl.style.top = `${letterEl.offsetTop + offset}px`;
-    caretEl.style.left = `${letterEl.offsetLeft + letterEl.offsetWidth}px`;
+    $caretEl.style.top = `${$letterEl.offsetTop + offset}px`;
+    $caretEl.style.left = `${$letterEl.offsetLeft + $letterEl.offsetWidth}px`;
   };
 
   const getResults = () => {
@@ -104,12 +101,12 @@
   const getWordsPerMinute = () => {
     const word = 5;
     const minutes = 0.5;
-    return Math.floor(correctLetters / word / minutes);
+    return Math.floor($correctLetters / word / minutes);
   };
 
   const getAccuracy = () => {
-    const totalLetters = getTotalLetters(words);
-    return Math.floor((correctLetters / totalLetters) * 100);
+    const totalLetters = getTotalLetters($words);
+    return Math.floor(($correctLetters / totalLetters) * 100);
   };
 
   const getTotalLetters = (words: Word[]) => {
@@ -120,12 +117,12 @@
     if (event.code === "Space") {
       event.preventDefault();
 
-      if (game === "in progress") {
+      if ($game === "in progress") {
         nextWord();
       }
     }
 
-    if (game === "waiting for input") {
+    if ($game === "waiting for input") {
       startGame();
     }
   };
@@ -137,15 +134,15 @@
 
   const setGameTimer = () => {
     const gameTimer = () => {
-      if (seconds > 0) {
-        seconds -= 1;
+      if ($timer > 0) {
+        $timer -= 1;
       }
 
-      if (game === "waiting for input" || seconds === 0) {
+      if ($game === "waiting for input" || $timer === 0) {
         clearInterval(interval);
       }
 
-      if (seconds === 0) {
+      if ($timer === 0) {
         setGameState("game over");
         getResults();
       }
@@ -155,20 +152,20 @@
   };
 
   const setGameState = (state: Game) => {
-    game = state;
+    $game = state;
   };
 
   const resetGame = () => {
-    toggleReset = !toggleReset;
+    $toggleReset = !$toggleReset;
 
     setGameState("waiting for input");
     getWords(100);
 
-    seconds = 30;
-    typedLetter = "";
-    wordIndex = 0;
-    letterIndex = 0;
-    correctLetters = 0;
+    $timer = 30;
+    $typedLetter = "";
+    $wordIndex = 0;
+    $letterIndex = 0;
+    $correctLetters = 0;
 
     $wordsPerMinute = 0;
     $accuracy = 0;
@@ -176,11 +173,11 @@
 
   const getWords = async (limit: number) => {
     const response = await fetch(`/api/words?limit=${limit}`);
-    words = await response.json();
+    $words = await response.json();
   };
 
   const focusInput = () => {
-    inputEl.focus();
+    $inputEl.focus();
   };
 
   onMount(() => {
@@ -189,22 +186,22 @@
   });
 </script>
 
-{#if game !== "game over"}
-  <div class="game" data-game={game}>
+{#if $game !== "game over"}
+  <div class="game" data-game={$game}>
     <input
-      bind:this={inputEl}
-      bind:value={typedLetter}
+      bind:this={$inputEl}
+      bind:value={$typedLetter}
       on:input={updateGameState}
       on:keydown={handleKeydown}
       class="input"
       type="text"
     />
 
-    <div class="time">{seconds}</div>
+    <div class="time">{$timer}</div>
 
-    {#key toggleReset}
-      <div in:blur|local bind:this={wordsEl} class="words">
-        {#each words as word}
+    {#key $toggleReset}
+      <div in:blur|local bind:this={$wordsEl} class="words">
+        {#each $words as word}
           <span class="word">
             {#each word as letter}
               <span class="letter">{letter}</span>
@@ -212,7 +209,7 @@
           </span>
         {/each}
 
-        <div bind:this={caretEl} class="caret" />
+        <div bind:this={$caretEl} class="caret" />
       </div>
     {/key}
 
@@ -237,7 +234,7 @@
   </div>
 {/if}
 
-{#if game === "game over"}
+{#if $game === "game over"}
   <div in:blur class="results">
     <div>
       <p class="title">wpm</p>
@@ -349,6 +346,7 @@
 
     .play {
       margin-top: 1.6rem;
+      font-size: 1.6rem;
     }
   }
 </style>

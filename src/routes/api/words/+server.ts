@@ -1,6 +1,5 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
-
 import english from "./languages/english.json";
 
 export const GET: RequestHandler = ({ url }) => {
