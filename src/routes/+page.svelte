@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { blur } from "svelte/transition";
+  import { handleKeydown, resetGame, getWords, focusInput, updateGameState } from "$lib/utils";
   import {
     timer,
     game,
@@ -13,13 +14,6 @@
     wordsPerMinute,
     accuracy,
   } from "$lib/stores";
-  import {
-    handleKeydown,
-    resetGame,
-    getWords,
-    focusInput,
-    updateGameState
-  } from "$lib/utils";
 
   onMount(() => {
     getWords(100);

@@ -15,7 +15,18 @@ import {
   caretEl,
   inputEl
 } from "$lib/stores";
-import type { Game, Word } from "$lib/types/types";
+import {
+  checkLetter,
+  getTotalLetters,
+  getWords,
+  getWordsPerMinute,
+  moveCaret,
+  nextLetter,
+  nextWord,
+  resetLetter,
+  setLetter,
+} from "./words.util";
+import type { Game } from "$lib/types/types";
 
 export const handleKeydown = (event: KeyboardEvent) => {
   if (event.code === "Space") {
@@ -47,12 +58,6 @@ export const resetGame = () => {
   accuracy.set(0);
 };
 
-export const getWords = async (limit: number) => {
-  const response = await fetch(`/api/words?limit=${limit}`);
-  const json = await response.json();
-  words.set(json);
-};
-
 export const focusInput = () => {
   get(inputEl).focus();
 };
@@ -66,35 +71,9 @@ export const updateGameState = () => {
   moveCaret();
 };
 
-const nextWord = () => {
-  const isNotFirstLetter: boolean = get(letterIndex) !== 0;
-  const isOneLetterWord: boolean = get(words)[get(wordIndex)].length === 1;
-
-  if (isNotFirstLetter || isOneLetterWord) {
-    wordIndex.set(get(wordIndex) + 1);
-    letterIndex.set(0);
-    increaseScore();
-    moveCaret();
-  }
-};
-
-const getWordsPerMinute = () => {
-  const word = 5;
-  const minutes = 0.5;
-  return Math.floor(get(correctLetters) / word / minutes);
-};
-
 const getAccuracy = () => {
   const totalLetters = getTotalLetters(get(words));
   return Math.floor((get(correctLetters) / totalLetters) * 100);
-};
-
-const getTotalLetters = (words: Word[]) => {
-  return words.reduce((count, word) => count + word.length, 0);
-};
-
-const increaseScore = () => {
-  correctLetters.set(get(correctLetters) + 1);
 };
 
 const startGame = () => {
@@ -130,39 +109,6 @@ const getResults = () => {
   accuracy.set(getAccuracy());
 };
 
-const setLetter = () => {
-  const isWordCompleted: boolean = get(letterIndex) > get(words)[get(wordIndex)].length - 1;
-
-  if (!isWordCompleted) {
-    letterEl.set(
-      get(wordsEl).children[get(wordIndex)].children[
-      get(letterIndex)
-      ] as HTMLSpanElement
-    );
-  }
-};
-
-const checkLetter = () => {
-  const currentLetter: string = get(words)[get(wordIndex)][get(letterIndex)];
-
-  if (get(typedLetter) === currentLetter) {
-    get(letterEl).dataset.letter = "correct";
-    increaseScore();
-  }
-
-  if (get(typedLetter) !== currentLetter) {
-    get(letterEl).dataset.letter = "incorrect";
-  }
-};
-
-const resetLetter = () => {
-  typedLetter.set("");
-};
-
-const nextLetter = () => {
-  letterIndex.set(get(letterIndex) + 1);
-};
-
 const updateLine = () => {
   const wordEl = get(wordsEl).children[get(wordIndex)];
   const wordsY = get(wordsEl).getBoundingClientRect().y;
@@ -171,10 +117,4 @@ const updateLine = () => {
   if (wordY > wordsY) {
     wordEl.scrollIntoView({ block: "center" });
   }
-};
-
-const moveCaret = () => {
-  const offset = 4;
-  get(caretEl).style.top = `${get(letterEl).offsetTop + offset}px`;
-  get(caretEl).style.left = `${get(letterEl).offsetLeft + get(letterEl).offsetWidth}px`;
 };
